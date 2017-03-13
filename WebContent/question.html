@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Pluralsight Quiz</title>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script language="javascript">
+
+$(document).ready(function(){
+	$('#allQuestionsbtn').click(function(){
+		$("#questionTbl").empty();
+	 
+	    jQuery.ajax({
+	         type: "GET",
+	         url: "http://localhost:8080/question",
+	         contentType: "application/json; charset=utf-8",
+	         dataType: "json",
+	         success: function (data, status) {
+	        	 var trHTML = '';
+	        	 $.each(data, function(key,value) {    
+	        		 $.each(value, function(question, result) {
+	        			 trHTML = '<tr>'
+	        			 		  +'<td>' + result.questionName + '</td>'
+	        			 		  +'<td><a href="#" id="qdetail" onclick="viewDetail(\''+result.id+'\')">Detail</a>'
+	        			 		  +'</tr>'
+	        			 			
+	        			 $("#questionTbl").append(trHTML);
+	        		 });
+	        		 
+	        	 });
+	        	 
+	        	 
+	         },
+
+	         error: function (status) {
+	             // error handler
+	         }
+	});
+});
+	$("#createQtnbtn").click(function(){
+		
+		$("#questionTbl").empty();
+	});
+});
+
+function viewDetail(qid) {
+	
+	$("#questionTbl").empty();
+	jQuery.ajax({
+        type: "GET",
+        url: "http://localhost:8080/question/"+qid,
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (data, status) {
+       	 var trHTML = '';   
+       			 trHTML = '<tr>'
+       			 		  +'<th>Question Name</th>'
+       			 		  +'<th>Correct Answer</th>'
+       			 		  +'<th>Distractors</th>'
+       			 		  +'</tr>'
+       			 		  +'<tr>'
+       			 		  +'<td>' + data.questionName + '</td>'
+       			 		  +'<td>' + data.correctAnswer + '</td>'
+       		 	
+       		trHTML += '<td><ul>';
+       		$.each(data.distractors, function(index, value) {
+       			trHTML += '<li>' + value.distractor +'</li>';
+       		});	 		
+       		trHTML += '</ul></td></tr>';
+       		
+       		$("#questionTbl").append(trHTML);
+       	 
+        },
+
+        error: function (status) {
+            // error handler
+        }
+});
+	
+}
+
+function createQuestion() {
+	var data = $("#createForm").serializeArray();
+	var jsonData = {};  
+   
+	$.each(data, function() {
+		jsonData[this.name] = this.value || '';
+		});
+
+		jQuery.ajax({
+			type : "PUT",
+			url : "http://localhost:8080/question/create",
+			contentType : "application/json",
+			dataType : "json",
+			data : JSON.stringify(jsonData),
+			success : function() {
+
+			},
+
+			error : function(status) {
+				
+			}
+		});
+
+	}
+</script>
+</head>
+<body>
+	<h2>Pluralsight Quiz</h2>
+	<table>
+		<tr>
+			<td>
+				<div id="allQuestionsbtn">
+					<button type="button">Retrieve All Questions</button>
+				</div>
+			</td>
+			<td>
+				<div id="createQtnbtn">
+					<button type="button">Create Question</button>
+				</div>
+			</td>
+		<tr>
+			<td>
+				<div id="questionDiv">
+					<table id="questionTbl" border=1>
+					</table>
+				</div>
+			<td>
+			<td></td>
+		</tr>
+	</table>
+	<form id="createForm" onsubmit="createQuestion()">
+	<table>
+		<tr>
+			<td>
+				<label>Question:</label>
+				<input type="text" name="questionName">
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<label>Answer:</label>
+				<input type="text" name="correctAnswer">
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<label>Distractors:</label>
+				<input type="text" name="distractors[0][distractor]">
+				<input type="text" name="distractors[1][distractor]">
+				<input type="text" name="distractors[2][distractor]">
+				<input type="text" name="distractors[3][distractor]">
+				<input type="text" name="distractors[4][distractor]">
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<input type="submit" value="Save">
+			</td>	
+		</tr>
+	</table>
+	</form>
+</body>
+</html>
